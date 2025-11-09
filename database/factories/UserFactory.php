@@ -29,7 +29,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'User',
-            'library_id' => strtoupper($this->faker->bothify('LIB-####')),
+            'library_id' => strtoupper($this->faker->unique()->bothify('LIB-####')),
             'remember_token' => Str::random(10),
         ];
     }
