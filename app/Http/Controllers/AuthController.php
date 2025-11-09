@@ -13,6 +13,8 @@ class AuthController extends Controller
         $fields = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'role' => 'required|string|in:Admin,User',
+            'library_id' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
         ]);
 
