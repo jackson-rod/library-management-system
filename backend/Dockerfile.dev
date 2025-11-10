@@ -2,8 +2,8 @@ FROM php:8.3-cli
 
 # Required extensions and utilities for development (includes curl for healthcheck)
 RUN apt-get update && apt-get install -y \
-  git unzip curl libicu-dev libzip-dev libpng-dev libxml2-dev \
-  && docker-php-ext-install pdo pdo_mysql intl zip \
+  git unzip curl libicu-dev libzip-dev libpng-dev libxml2-dev sqlite3 libsqlite3-dev \
+  && docker-php-ext-install pdo pdo_mysql pdo_sqlite intl zip \
   && rm -rf /var/lib/apt/lists/*
 
 # Composer
