@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -14,7 +13,7 @@ class AuthController extends Controller
         $fields = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'role' => 'required|string|in:Admin,User',
+            'role' => 'sometimes|string|in:Admin,User',
             'library_id' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
         ]);
