@@ -1,0 +1,19 @@
+FROM php:8.3-cli
+
+# Required extensions and utilities for development (includes curl for healthcheck)
+RUN apt-get update && apt-get install -y \
+  git unzip curl libicu-dev libzip-dev libpng-dev libxml2-dev sqlite3 libsqlite3-dev \
+  && docker-php-ext-install pdo pdo_mysql pdo_sqlite intl zip \
+  && rm -rf /var/lib/apt/lists/*
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Entrypoint script for development (outside the mounted tree so the volume doesn't overwrite it)
+COPY entrypoint.dev.sh /usr/local/bin/entrypoint-dev.sh
+RUN chmod +x /usr/local/bin/entrypoint-dev.sh
+
+EXPOSE 8000
+ENTRYPOINT ["entrypoint-dev.sh"]
