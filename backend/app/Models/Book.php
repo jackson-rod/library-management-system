@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Book extends Model
 {
@@ -11,12 +12,15 @@ class Book extends Model
 
     protected $fillable = ['title', 'author', 'isbn', 'publication_year', 'available'];
 
+    protected $casts = [
+        'available' => 'boolean',
+    ];
+
     /**
-     * Get the borrows for the book.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * A book can have many borrow records over time.
      */
-    public function borrows()
+    public function borrows(): HasMany
     {
         return $this->hasMany(Borrow::class);
-    }}
+    }
+}

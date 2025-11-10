@@ -10,8 +10,9 @@ import { classNames } from '@/utils/classNames';
 interface NavigationItem {
   name: string;
   href: string;
-  isDisabled: boolean;
+  isDisabled?: boolean;
   adminOnly?: boolean;
+  isActive?: (pathname: string) => boolean;
 }
 
 export default function NavigationBar() {
@@ -25,9 +26,13 @@ export default function NavigationBar() {
   const isAdmin = user?.role && user.role.toLowerCase() === 'admin';
 
   const navigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/dashboard', isDisabled: false },
-    { name: 'Books', href: '/books', isDisabled: true },
-    { name: 'My Borrowings', href: '/borrowings', isDisabled: true },
+    { name: 'Dashboard', href: '/dashboard' },
+    {
+      name: 'Books',
+      href: '/books',
+      isActive: (pathname: string) => pathname === '/books' || pathname.startsWith('/books/'),
+    },
+    { name: 'My Borrowings', href: '/borrowings' },
     { name: 'Manage Books', href: '/admin/books', adminOnly: true, isDisabled: true },
     { name: 'Manage Users', href: '/admin/users', adminOnly: true, isDisabled: true },
   ].filter((item) => !item.adminOnly || isAdmin);
@@ -37,7 +42,7 @@ export default function NavigationBar() {
       await logout();
       setProfileMenuOpen(false);
       showToast('You have been logged out successfully', 'success');
-      navigate('/login');
+      navigate('/signin');
     } catch (error) {
       console.error('Logout failed:', error);
       showToast('Failed to logout. Please try again.', 'error');
@@ -80,24 +85,33 @@ export default function NavigationBar() {
 
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    aria-disabled={item.isDisabled ? 'true' : 'false'}
-                    aria-current={location.pathname === item.href ? 'page' : undefined}
-                    className={classNames(
-                      location.pathname === item.href
-                        ? 'bg-gray-950/50 text-white'
-                        : 'text-gray-300 hover:bg-white/5 hover:text-white',
-                      'rounded-md px-3 py-2 text-sm font-medium',
-                      item.isDisabled ? 'cursor-not-allowed opacity-50' : ''
-                    )}
-                    data-testid={`nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
+                {navigation.map((item) => {
+                  const isActive = item.isActive
+                    ? item.isActive(location.pathname)
+                    : location.pathname === item.href;
+
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.isDisabled ? location.pathname : item.href}
+                      aria-disabled={item.isDisabled ? 'true' : 'false'}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={classNames(
+                        isActive ? 'bg-gray-950/50 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white',
+                        'rounded-md px-3 py-2 text-sm font-medium',
+                        item.isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                      )}
+                      onClick={(event) => {
+                        if (item.isDisabled) {
+                          event.preventDefault();
+                        }
+                      }}
+                      data-testid={`nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -173,23 +187,31 @@ export default function NavigationBar() {
       {mobileMenuOpen && (
         <div className="sm:hidden" data-testid="mobile-menu">
           <div className="space-y-1 px-2 pt-2 pb-3">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                aria-current={location.pathname === item.href ? 'page' : undefined}
-                className={classNames(
-                  location.pathname === item.href
-                    ? 'bg-gray-950/50 text-white'
-                    : 'text-gray-300 hover:bg-white/5 hover:text-white',
-                  'block rounded-md px-3 py-2 text-base font-medium'
-                )}
-                data-testid={`mobile-nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive = item.isActive
+                ? item.isActive(location.pathname)
+                : location.pathname === item.href;
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.isDisabled ? location.pathname : item.href}
+                  onClick={() => {
+                    if (item.isDisabled) return;
+                    setMobileMenuOpen(false);
+                  }}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={classNames(
+                    isActive ? 'bg-gray-950/50 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white',
+                    'block rounded-md px-3 py-2 text-base font-medium',
+                    item.isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                  )}
+                  data-testid={`mobile-nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
