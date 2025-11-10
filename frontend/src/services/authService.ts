@@ -1,5 +1,5 @@
-import { api } from '../config/axios';
-import type { LoginCredentials, RegisterData, AuthResponse } from '../types/auth';
+import { api } from '@/config/axios';
+import type { LoginCredentials, RegisterData, AuthResponse } from '@/types/auth';
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {

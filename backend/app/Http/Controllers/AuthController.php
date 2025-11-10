@@ -19,6 +19,10 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
+        $fields['role'] = $fields['role'] ?? 'User';
+
+        $fields['library_id'] = $this->generateLibraryId();
+
         $user = User::create($fields);
         $token = $user->createToken($user->name);
 
@@ -29,6 +33,36 @@ class AuthController extends Controller
 
         return response($response, 201);
     }
+
+    /**
+     * Generate a unique library ID in the format LIB-####
+     * Uses a combination of random numbers to ensure uniqueness
+     */
+    private function generateLibraryId(): string
+    {
+        $maxAttempts = 100;
+        $attempts = 0;
+
+        do {
+            $number = rand(1000, 9999);
+            $libraryId = 'LIB-' . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+            $attempts++;
+
+            if ($attempts >= $maxAttempts) {
+                $timestamp = time();
+                $randomSuffix = rand(100, 999);
+                $fallbackNumber = substr($timestamp . $randomSuffix, -4);
+                $libraryId = 'LIB-' . str_pad($fallbackNumber, 4, '0', STR_PAD_LEFT);
+                if (User::where('library_id', $libraryId)->exists()) {
+                    $libraryId = 'LIB-' . str_pad(substr($timestamp, -3), 3, '0', STR_PAD_LEFT) . chr(65 + rand(0, 25));
+                }
+                break;
+            }
+        } while (User::where('library_id', $libraryId)->exists());
+
+        return $libraryId;
+    }
+
     public function login(Request $request)
     {
         $request->validate([

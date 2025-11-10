@@ -1,9 +1,10 @@
-import './App.css'
+import '@/App.css'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import SignIn from './components/SignIn'
-import Dashboard from './components/Dashboard'
-import ProtectedRoute from './components/ProtectedRoute'
-import PublicRoute from './components/PublicRoute'
+import SignIn from '@/components/SignIn'
+import Register from '@/components/Register'
+import Dashboard from '@/components/Dashboard'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import PublicRoute from '@/components/PublicRoute'
 
 function App() {
   return (
@@ -11,12 +12,24 @@ function App() {
       <div className="min-h-screen bg-gray-900">
         <Routes>
           <Route
-            path="/login"
+            path="/signin"
             element={
               <PublicRoute>
                 <SignIn />
               </PublicRoute>
             }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={<Navigate to="/signin" replace />}
           />
           <Route
             path="/dashboard"
