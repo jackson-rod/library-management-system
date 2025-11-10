@@ -158,6 +158,46 @@ If you move folders, update these links accordingly.
 
 ---
 
+## API Documentation (Swagger)
+
+This project ships with [L5 Swagger](https://github.com/DarkaOnLine/L5-Swagger). To regenerate the OpenAPI spec after changing controllers or routes:
+
+```bash
+cd backend
+php artisan l5-swagger:generate
+```
+
+Then browse the interactive docs at **<http://localhost:9080/api/documentation>**.  
+Annotations live alongside the controllers/resources (`AuthController`, `BookController`, `BorrowController`, etc.), so extend them there when you add endpoints.
+
+> Ensure `L5_SWAGGER_*` variables in `backend/.env` reflect your local URL (e.g., `APP_URL=http://localhost:9080`).
+
+---
+
+## Borrowing Workflow Snapshot
+
+- **Borrow limit:** users can have up to 3 active loans (`Borrow::MAX_ACTIVE_BORROWS`).
+- **Endpoints:** `/api/borrowings` (admin list), `/api/borrowings` (POST to borrow), `/api/me/borrowings`, `/api/borrowings/{id}/return`.
+- **Frontend:** Dashboard, `Books` catalog, and `My Borrowings` surfaces live metrics, client-side sorting, and return actions.
+
+Keep these behaviors in mind when updating controllers, jobs, or UI flows so the documentation and feature parity stay aligned.
+
+---
+
+## Testing Notes
+
+- **Backend:** `php artisan test` uses SQLite in memory (see `phpunit.xml`). No extra setup required inside Docker.
+- **Frontend:** Vitest requires Rollup’s optional native binary. If you see `Cannot find module '@rollup/rollup-darwin-arm64'`, reinstall dependencies:
+
+  ```bash
+  cd frontend
+  rm -rf node_modules package-lock.json
+  npm install
+  npm run test
+  ```
+
+---
+
 ## Notes
 
 - This setup is for **development only** (HMR, verbose logs, no opcache tuning for prod). A separate production stack should use Nginx + PHP-FPM, built assets, and cache optimizations.
