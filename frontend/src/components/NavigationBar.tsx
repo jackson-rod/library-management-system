@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import Logo from '@/assets/logo.webp';
 
-import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../hooks/useToast';
-import { classNames } from '../utils/classNames';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { classNames } from '@/utils/classNames';
 
 interface NavigationItem {
   name: string;
@@ -68,7 +69,7 @@ export default function NavigationBar() {
             <div className="flex shrink-0 items-center">
               <img
                 alt="Library Management"
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+                src={ Logo }
                 className="h-8 w-auto"
                 data-testid="navbar-logo"
               />
@@ -141,7 +142,7 @@ export default function NavigationBar() {
                   >
                     <div className="px-4 py-2 border-b border-white/10">
                       <p className="text-sm font-medium text-white">{user?.name}</p>
-                      <p className="text-xs text-gray-400">{user?.email}</p>
+                      <p className="text-xs text-gray-400 break-words">{user?.email}</p>
                       <p className="text-xs text-indigo-400 mt-1">{user?.role}</p>
                     </div>
                     <Link
