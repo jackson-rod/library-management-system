@@ -32,15 +32,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response) {
-      // Handle 401 Unauthorized
-      if (error.response.status === 401) {
-        // User is not authenticated
-        console.error('Unauthorized access');
+    const { response } = error;
+
+    if (response) {
+      if (response.status === 401) {
+        localStorage.removeItem('auth_token');
+
+        if (!window.location.pathname.startsWith('/signin') && !window.location.pathname.startsWith('/register')) {
+          window.location.replace('/signin');
+        }
       }
 
-      // Handle 403 Forbidden
-      if (error.response.status === 403) {
+      if (response.status === 403) {
         console.error('Access forbidden');
       }
     }

@@ -5,6 +5,9 @@ import Register from '@/components/Register'
 import Dashboard from '@/components/Dashboard'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PublicRoute from '@/components/PublicRoute'
+import BooksPage from '@/components/BooksPage'
+import BorrowingsPage from '@/components/BorrowingsPage'
+import BookDetails from '@/components/BookDetails'
 
 function App() {
   return (
@@ -36,6 +39,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/books"
+            element={
+              <ProtectedRoute>
+                <BooksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/books/:id"
+            element={
+              <ProtectedRoute>
+                <BookDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/borrowings"
+            element={
+              <ProtectedRoute>
+                <BorrowingsPage />
               </ProtectedRoute>
             }
           />
