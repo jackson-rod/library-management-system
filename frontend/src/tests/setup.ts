@@ -3,6 +3,7 @@ import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import '@testing-library/jest-dom/vitest';
 import { server } from './mocks/server';
+import { resetMockLibraryData } from './mocks/handlers';
 
 expect.extend(matchers);
 
@@ -15,6 +16,7 @@ beforeAll(() => {
 // Cleanup after each test
 afterEach(() => {
   cleanup();
+  resetMockLibraryData();
   server.resetHandlers();
 });
 
