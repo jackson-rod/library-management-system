@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\UserController;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -16,4 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('books', BookController::class)->except(['index', 'show'])->middleware('role:Admin');
     Route::apiResource('users', UserController::class)->middleware('role:Admin');
+    Route::get('/borrowings', [BorrowController::class, 'index'])->middleware('role:Admin');
+    Route::get('/me/borrowings', [BorrowController::class, 'myBorrowings']);
+    Route::post('/borrowings', [BorrowController::class, 'store']);
+    Route::post('/borrowings/{borrow}/return', [BorrowController::class, 'returnBook']);
 });
