@@ -62,7 +62,7 @@ describe('ToastContainer', () => {
 
     const container = screen.getByTestId('toast-container');
     expect(container.className).toContain('fixed');
-    expect(container.className).toContain('top-4');
+    expect(container.className).toContain('top-20');
     expect(container.className).toContain('right-4');
   });
 });

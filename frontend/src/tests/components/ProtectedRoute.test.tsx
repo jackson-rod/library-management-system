@@ -44,7 +44,7 @@ function TestApp({ authenticated }: { authenticated: boolean }) {
       <AuthProvider>
         <ToastProvider>
           <Routes>
-            <Route path="/login" element={<div>Login Page</div>} />
+            <Route path="/signin" element={<div>Sign In Page</div>} />
             <Route
               path="/dashboard"
               element={
@@ -71,7 +71,7 @@ describe('ProtectedRoute', () => {
     
     // The loading state might be too fast to catch, so we just verify
     // that eventually we redirect to login (auth check completed)
-    const loginPage = await screen.findByText('Login Page', {}, { timeout: 3000 });
+    const loginPage = await screen.findByText('Sign In Page', {}, { timeout: 3000 });
     expect(loginPage).toBeInTheDocument();
   });
 
@@ -91,7 +91,7 @@ describe('ProtectedRoute', () => {
     rtlRender(<TestApp authenticated={false} />);
 
     // Should redirect to login after auth check
-    const loginPage = await screen.findByText('Login Page', {}, { timeout: 3000 });
+    const loginPage = await screen.findByText('Sign In Page', {}, { timeout: 3000 });
     
     expect(loginPage).toBeInTheDocument();
     expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument();

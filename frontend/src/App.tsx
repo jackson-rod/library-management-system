@@ -8,6 +8,7 @@ import PublicRoute from '@/components/PublicRoute'
 import BooksPage from '@/components/BooksPage'
 import BorrowingsPage from '@/components/BorrowingsPage'
 import BookDetails from '@/components/BookDetails'
+import ResourcesPage from '@/components/ResourcesPage'
 
 function App() {
   return (
@@ -63,6 +64,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <BorrowingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              <ProtectedRoute>
+                <ResourcesPage />
               </ProtectedRoute>
             }
           />
