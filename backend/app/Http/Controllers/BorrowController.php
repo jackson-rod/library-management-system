@@ -10,11 +10,36 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Annotations as OA;
 
+/**
+ * @OA\Tag(
+ *     name="Borrowing",
+ *     description="Borrow and return operations"
+ * )
+ */
 class BorrowController extends Controller
 {
     /**
-     * List borrow records (admin only via routes).
+     * @OA\Get(
+     *     path="/api/borrowings",
+     *     summary="List borrow records (admin)",
+     *     tags={"Borrowing"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by status (active|all)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Borrowing collection",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BorrowResource"))
+     *         )
+     *     )
+     * )
      */
     public function index(Request $request): JsonResponse
     {
@@ -30,7 +55,21 @@ class BorrowController extends Controller
     }
 
     /**
-     * Borrow a book for the authenticated user.
+     * @OA\Post(
+     *     path="/api/borrowings",
+     *     summary="Borrow a book",
+     *     tags={"Borrowing"},
+     *     security={{"sanctum": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"book_id"},
+     *             @OA\Property(property="book_id", type="integer", example=5)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Borrow created", @OA\JsonContent(ref="#/components/schemas/BorrowResource")),
+     *     @OA\Response(response=422, description="Book unavailable or limit reached")
+     * )
      */
     public function store(StoreBorrowRequest $request): JsonResponse
     {
@@ -73,7 +112,25 @@ class BorrowController extends Controller
     }
 
     /**
-     * Borrow history for the authenticated user.
+     * @OA\Get(
+     *     path="/api/me/borrowings",
+     *     summary="Current user borrowings",
+     *     tags={"Borrowing"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by status (active|all)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Borrowing list",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/BorrowResource"))
+     *         )
+     *     )
+     * )
      */
     public function myBorrowings(Request $request): JsonResponse
     {
@@ -90,7 +147,17 @@ class BorrowController extends Controller
     }
 
     /**
-     * Return a borrowed book (owner or admin).
+     * @OA\Post(
+     *     path="/api/borrowings/{borrow}/return",
+     *     summary="Return a borrowed book",
+     *     tags={"Borrowing"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="borrow", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Borrow returned", @OA\JsonContent(ref="#/components/schemas/BorrowResource")),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=404, description="Not found"),
+     *     @OA\Response(response=409, description="Already returned")
+     * )
      */
     public function returnBook(Borrow $borrow, Request $request): JsonResponse
     {

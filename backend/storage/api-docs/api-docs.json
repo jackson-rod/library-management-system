@@ -1,0 +1,729 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Library Management System API",
+        "description": "REST API powering the LMS borrow, catalog, and admin flows.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register a new user",
+                "operationId": "8a56853624e025573120a09a4c75d468",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "jane@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "User"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Authenticate a user",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@admin.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "admin123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout the current user",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Logged out"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Current authenticated user",
+                "operationId": "9d9bc556f927575aa492a88c28fe5908",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/books": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "List books",
+                "operationId": "a9d13283dfab262e97af3c914d51b7a8",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filter by title, author or ISBN",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BookResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Create a book",
+                "operationId": "47047e95a700b3271b697e57d0965191",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "author",
+                                    "isbn",
+                                    "publication_year"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "isbn": {
+                                        "type": "string"
+                                    },
+                                    "publication_year": {
+                                        "type": "integer"
+                                    },
+                                    "available": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Book created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/books/{id}": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Show a book",
+                "operationId": "2fdd668eb661591758aff4c56ca9b66a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Book",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookResource"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Update a book",
+                "operationId": "f5ca658c501a803d68655af0365e3802",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "isbn": {
+                                        "type": "string"
+                                    },
+                                    "publication_year": {
+                                        "type": "integer"
+                                    },
+                                    "available": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Book updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookResource"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Delete a book",
+                "operationId": "1a9c26667c32b8ed5e5770d7a1cc9d5c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/borrowings": {
+            "get": {
+                "tags": [
+                    "Borrowing"
+                ],
+                "summary": "List borrow records (admin)",
+                "operationId": "31090d9bfb892498428b5406f4fcecbc",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (active|all)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Borrowing collection",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BorrowResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Borrowing"
+                ],
+                "summary": "Borrow a book",
+                "operationId": "369f5a8d28235f7822e84c7aec920629",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "book_id"
+                                ],
+                                "properties": {
+                                    "book_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Borrow created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BorrowResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Book unavailable or limit reached"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/me/borrowings": {
+            "get": {
+                "tags": [
+                    "Borrowing"
+                ],
+                "summary": "Current user borrowings",
+                "operationId": "c1464e2ceadb2799eb3cd0973c949f0e",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (active|all)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Borrowing list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BorrowResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/borrowings/{borrow}/return": {
+            "post": {
+                "tags": [
+                    "Borrowing"
+                ],
+                "summary": "Return a borrowed book",
+                "operationId": "7d42b34ff67e9b9aa2ec688408fe41ee",
+                "parameters": [
+                    {
+                        "name": "borrow",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Borrow returned",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BorrowResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    },
+                    "409": {
+                        "description": "Already returned"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UserResource": {
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "role"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Default Admin"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "Admin"
+                    },
+                    "library_id": {
+                        "type": "string",
+                        "example": "LIB-1001",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AuthResponse": {
+                "required": [
+                    "user",
+                    "token"
+                ],
+                "properties": {
+                    "user": {
+                        "$ref": "#/components/schemas/UserResource"
+                    },
+                    "token": {
+                        "type": "string",
+                        "example": "1|abcd1234"
+                    }
+                },
+                "type": "object"
+            },
+            "BookResource": {
+                "required": [
+                    "id",
+                    "title",
+                    "author",
+                    "isbn",
+                    "publication_year",
+                    "available"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Clean Architecture"
+                    },
+                    "author": {
+                        "type": "string",
+                        "example": "Robert C. Martin"
+                    },
+                    "isbn": {
+                        "type": "string",
+                        "example": "9780134494166"
+                    },
+                    "publication_year": {
+                        "type": "integer",
+                        "example": 2017
+                    },
+                    "available": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "BorrowResource": {
+                "required": [
+                    "id",
+                    "borrowed_at",
+                    "due_date",
+                    "status",
+                    "is_overdue",
+                    "days_overdue"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 55
+                    },
+                    "borrowed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "returned_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "is_overdue": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "days_overdue": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "book": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BookResource"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/UserResource"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Authentication and session management"
+        },
+        {
+            "name": "Books",
+            "description": "Book catalog management"
+        },
+        {
+            "name": "Borrowing",
+            "description": "Borrow and return operations"
+        }
+    ]
+}

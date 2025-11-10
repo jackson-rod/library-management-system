@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/useToast';
 import { extractErrorMessage } from '@/utils/error';
 
 const SEARCH_DEBOUNCE_MS = 350;
+type SortColumn = 'title' | 'author' | 'isbn' | 'available';
+type SortDirection = 'asc' | 'desc';
 
 export default function BooksPage() {
   const { showToast } = useToast();
@@ -22,6 +24,8 @@ export default function BooksPage() {
   const [loading, setLoading] = useState(true);
   const [borrowCount, setBorrowCount] = useState(0);
   const [borrowInFlight, setBorrowInFlight] = useState<number | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>('title');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,6 +47,31 @@ export default function BooksPage() {
     () => borrowCount >= MAX_ACTIVE_BORROWS,
     [borrowCount]
   );
+
+  const sortedBooks = useMemo(() => {
+    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+    const sorted = [...books].sort((a, b) => {
+      let result = 0;
+      switch (sortColumn) {
+        case 'author':
+          result = collator.compare(a.author, b.author);
+          break;
+        case 'isbn':
+          result = collator.compare(a.isbn, b.isbn);
+          break;
+        case 'available':
+          result = Number(a.available) - Number(b.available);
+          break;
+        case 'title':
+        default:
+          result = collator.compare(a.title, b.title);
+          break;
+      }
+      return sortDirection === 'asc' ? result : -result;
+    });
+
+    return sorted;
+  }, [books, sortColumn, sortDirection]);
 
   const loadBooks = async (pageNumber = 1, term = '') => {
     setLoading(true);
@@ -96,6 +125,26 @@ export default function BooksPage() {
     if (direction === 'prev' && page > 1) {
       loadBooks(page - 1, debouncedSearch);
     }
+  };
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const renderSortIndicator = (column: SortColumn) => {
+    if (sortColumn !== column) {
+      return <span aria-hidden="true" className="text-xs text-gray-500">↕</span>;
+    }
+    return (
+      <span aria-hidden="true" className="text-xs text-indigo-300">
+        {sortDirection === 'asc' ? '▲' : '▼'}
+      </span>
+    );
   };
 
   return (
@@ -189,15 +238,63 @@ export default function BooksPage() {
               <table className="min-w-full divide-y divide-white/5 text-sm">
                 <thead>
                   <tr className="text-left text-gray-400">
-                    <th className="py-3 pr-4 font-medium">Title</th>
-                    <th className="py-3 pr-4 font-medium">Author</th>
-                    <th className="py-3 pr-4 font-medium">ISBN</th>
-                    <th className="py-3 pr-4 font-medium text-center">Availability</th>
+                    <th
+                      className="py-3 pr-4 font-medium"
+                      aria-sort={sortColumn === 'title' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSort('title')}
+                        className="inline-flex items-center gap-2 text-left text-gray-400 hover:text-white"
+                      >
+                        Title
+                        {renderSortIndicator('title')}
+                      </button>
+                    </th>
+                    <th
+                      className="py-3 pr-4 font-medium"
+                      aria-sort={sortColumn === 'author' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSort('author')}
+                        className="inline-flex items-center gap-2 text-left text-gray-400 hover:text-white"
+                      >
+                        Author
+                        {renderSortIndicator('author')}
+                      </button>
+                    </th>
+                    <th
+                      className="py-3 pr-4 font-medium"
+                      aria-sort={sortColumn === 'isbn' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSort('isbn')}
+                        className="inline-flex items-center gap-2 text-left text-gray-400 hover:text-white"
+                      >
+                        ISBN
+                        {renderSortIndicator('isbn')}
+                      </button>
+                    </th>
+                    <th
+                      className="py-3 pr-4 font-medium text-center"
+                      aria-sort={sortColumn === 'available' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSort('available')}
+                        className="inline-flex items-center gap-2 text-gray-400 hover:text-white"
+                      >
+                        Availability
+                        {renderSortIndicator('available')}
+                      </button>
+                    </th>
                     <th className="py-3 pr-4 font-medium text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-white">
-                  {books.map((book) => {
+                  {sortedBooks.map((book) => {
                     const isAvailable = book.available;
                     const disableBorrow = !isAvailable || borrowLimitReached || borrowInFlight === book.id;
 
