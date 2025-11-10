@@ -29,6 +29,8 @@ export default function Dashboard() {
   const { showToast } = useToast();
   const [borrows, setBorrows] = useState<Borrow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeSortColumn, setActiveSortColumn] = useState<'book' | 'due_date'>('due_date');
+  const [activeSortDirection, setActiveSortDirection] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const fetchBorrowings = async () => {
@@ -57,6 +59,19 @@ export default function Dashboard() {
     [activeBorrows]
   );
 
+  const sortedActiveBorrows = useMemo(() => {
+    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+    return [...activeBorrows].sort((a, b) => {
+      let result = 0;
+      if (activeSortColumn === 'book') {
+        result = collator.compare(a.book.title, b.book.title);
+      } else {
+        result = new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      }
+      return activeSortDirection === 'asc' ? result : -result;
+    });
+  }, [activeBorrows, activeSortColumn, activeSortDirection]);
+
   const returnedThisMonth = useMemo(
     () =>
       borrows.filter(
@@ -80,6 +95,26 @@ export default function Dashboard() {
   );
 
   const limitRemaining = Math.max(MAX_ACTIVE_BORROWS - activeBorrows.length, 0);
+
+  const handleActiveSort = (column: 'book' | 'due_date') => {
+    if (activeSortColumn === column) {
+      setActiveSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setActiveSortColumn(column);
+      setActiveSortDirection('asc');
+    }
+  };
+
+  const renderActiveSortIndicator = (column: 'book' | 'due_date') => {
+    if (activeSortColumn !== column) {
+      return <span aria-hidden="true" className="text-xs text-gray-500">↕</span>;
+    }
+    return (
+      <span aria-hidden="true" className="text-xs text-indigo-300">
+        {activeSortDirection === 'asc' ? '▲' : '▼'}
+      </span>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -143,7 +178,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="mt-4 overflow-x-auto">
-                  {activeBorrows.length === 0 ? (
+                  {sortedActiveBorrows.length === 0 ? (
                     <p className="py-8 text-center text-gray-400">
                       No active borrowings. Browse the <Link to="/books" className="text-indigo-400 underline">catalog</Link> to get started.
                     </p>
@@ -151,13 +186,37 @@ export default function Dashboard() {
                     <table className="min-w-full divide-y divide-white/5 text-sm">
                       <thead>
                         <tr className="text-left text-gray-400">
-                          <th className="py-3 pr-4 font-medium">Book</th>
-                          <th className="py-3 pr-4 font-medium">Due date</th>
+                          <th
+                            className="py-3 pr-4 font-medium"
+                            aria-sort={activeSortColumn === 'book' ? (activeSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleActiveSort('book')}
+                              className="inline-flex items-center gap-2 text-left text-gray-400 hover:text-white"
+                            >
+                              Book
+                              {renderActiveSortIndicator('book')}
+                            </button>
+                          </th>
+                          <th
+                            className="py-3 pr-4 font-medium"
+                            aria-sort={activeSortColumn === 'due_date' ? (activeSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleActiveSort('due_date')}
+                              className="inline-flex items-center gap-2 text-left text-gray-400 hover:text-white"
+                            >
+                              Due date
+                              {renderActiveSortIndicator('due_date')}
+                            </button>
+                          </th>
                           <th className="py-3 pr-4 font-medium text-right">Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                        {activeBorrows.map((borrow) => (
+                        {sortedActiveBorrows.map((borrow) => (
                           <tr key={borrow.id}>
                             <td className="py-4 pr-4">
                               <p className="font-medium text-white">{borrow.book.title}</p>

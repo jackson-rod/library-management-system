@@ -4,7 +4,23 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Annotations as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="BorrowResource",
+ *     required={"id","borrowed_at","due_date","status","is_overdue","days_overdue"},
+ *     @OA\Property(property="id", type="integer", example=55),
+ *     @OA\Property(property="borrowed_at", type="string", format="date-time"),
+ *     @OA\Property(property="due_date", type="string", format="date-time"),
+ *     @OA\Property(property="returned_at", type="string", format="date-time", nullable=true),
+ *     @OA\Property(property="status", type="string", example="active"),
+ *     @OA\Property(property="is_overdue", type="boolean", example=false),
+ *     @OA\Property(property="days_overdue", type="integer", example=0),
+ *     @OA\Property(property="book", ref="#/components/schemas/BookResource", nullable=true),
+ *     @OA\Property(property="user", ref="#/components/schemas/UserResource", nullable=true)
+ * )
+ */
 class BorrowResource extends JsonResource
 {
     /**
