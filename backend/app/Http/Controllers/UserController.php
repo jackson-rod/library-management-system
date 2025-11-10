@@ -17,7 +17,7 @@ class UserController extends Controller
             $users = User::paginate(10);
             return response()->json($users, 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Unable to get users'], 500);
+            return response()->json(['message' => 'Unable to get users', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -27,10 +27,11 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         try {
+            // The User model has 'password' => 'hashed' in casts, so it will automatically hash the password
             $user = User::create($request->validated());
             return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Unable to create user'], 500);
+            return response()->json(['message' => 'Unable to create user', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -48,10 +49,11 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user)
     {
         try {
+            // The User model has 'password' => 'hashed' in casts, so it will automatically hash the password if provided
             $user->update($request->validated());
             return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Unable to update user'], 500);
+            return response()->json(['message' => 'Unable to update user', 'error' => $e->getMessage()], 500);
         }
     }
 
