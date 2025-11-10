@@ -198,6 +198,20 @@ Keep these behaviors in mind when updating controllers, jobs, or UI flows so the
 
 ---
 
+## Postman Collection
+
+- Import `backend/Test LMS.postman_collection.json` to replay the Auth, Books, and Borrowing flows.
+- The collection assumes:
+  - Base URL variable `{{baseUrl}}` (set to `http://localhost:9080`).
+  - Environment-level `{{token}}` for the Sanctum bearer token (obtain via `/api/login`).
+- Requests cover:
+  - `POST /api/login` and `/api/register`
+  - `GET/POST/PUT/DELETE /api/books`
+  - `POST /api/borrowings`, `GET /api/me/borrowings`, `POST /api/borrowings/{id}/return`
+- Update the variables to point to your host if you’re running on a different port or via Docker.
+
+---
+
 ## Notes
 
 - This setup is for **development only** (HMR, verbose logs, no opcache tuning for prod). A separate production stack should use Nginx + PHP-FPM, built assets, and cache optimizations.
