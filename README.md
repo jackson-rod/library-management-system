@@ -1,66 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Development Environment (Docker) — Library Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository includes a **Docker-based development environment** for a Laravel 11 backend, a Vite + React + TypeScript frontend, and a MySQL database. It is designed to be **one command** to bring up locally with **hot-module reload (HMR)** for the frontend and an auto-starting Laravel dev server.
 
-## About Laravel
+> Editor‑friendly setup: the backend and frontend code are bind-mounted from the host, so your editor can see `backend/vendor` and `frontend/node_modules` directly.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## How the Docker Dev Environment Works
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Topology
 
-## Learning Laravel
+- **Network:** `lsm_devnet` (user-defined bridge network for clean service names).
+- **Services:**
+  - **MySQL (`lsm_mysql_dev`)** — MySQL 8, data persisted in a named Docker volume.  
+    Host access: `localhost:3307` → container `3306` (useful for local DB clients).
+  - **Backend (`lsm_backend_dev`)** — Laravel 11 served via `php artisan serve` inside the container.  
+    Host access: **<http://localhost:9080>**
+  - **Frontend (`lsm_frontend`)** — Vite dev server with HMR.  
+    Host access: **<http://localhost:5173>**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Mounts (editor‑friendly)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- Backend: `./backend:/var/www/html` → ensures your editor sees **`backend/vendor`**.
+- Frontend: `./frontend:/usr/src/app` → ensures your editor sees **`frontend/node_modules`**.
+- MySQL data: named volume `lsm_mysql_data_dev` to persist DB state between runs.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Backend Entrypoint
 
-## Laravel Sponsors
+The backend image includes a small entrypoint that:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Installs Composer dependencies.
+- Ensures required directories exist under `storage/` and `bootstrap/cache`.
+- Clears caches on dev.
+- If you are using **database sessions/queues** (`SESSION_DRIVER=database`, `QUEUE_CONNECTION=database`), it will **generate missing migrations once** (idempotent) and run `php artisan migrate`.
+- Starts `php artisan serve` at `0.0.0.0:8000` (exposed as `9080` on host).
 
-### Premium Partners
+The **developer controls the `.env`**. Make sure it is set for **MySQL** and **database sessions** before running Docker (see below).
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+---
 
-## Contributing
+## Prerequisites
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **Docker** (Desktop or Engine) and **Docker Compose v2** (`docker compose` command).
+- A valid **`backend/.env`** configured for MySQL + database sessions.
+- Optional: a valid **`frontend/.env`** (or `VITE_*` variables) if your frontend needs them.
 
-## Code of Conduct
+### Example `backend/.env` (development)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```env
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:9080
 
-## Security Vulnerabilities
+# Database (must match docker-compose.dev.yml)
+DB_CONNECTION=mysql
+DB_HOST=lsm_mysql_dev
+DB_PORT=3306
+DB_DATABASE=lms_database
+DB_USERNAME=lms_username
+DB_PASSWORD=lms_secret_password
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Sessions & Queues via DB
+SESSION_DRIVER=database
+SESSION_CONNECTION=mysql
+QUEUE_CONNECTION=database
 
-## License
+# Cache layer
+CACHE_DRIVER=file
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> If your `.env.example` had `DB_CONNECTION=sqlite`, make sure your real `.env` is updated to **MySQL**.
+
+---
+
+## Start the Docker Dev Environment
+
+From the repository root, run:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+It will:
+
+- Build images (Node 24 for the frontend, PHP 8.3 CLI for the backend).
+- Create the `lsm_devnet` network and the MySQL data volume.
+- Bring up MySQL, wait for it to be healthy, then start the backend and frontend.
+- Frontend will serve with HMR at **<http://localhost:5173>**.
+- Backend will serve at **<http://localhost:9080>**.
+
+### Logs (optional)
+
+```bash
+docker compose -f docker-compose.dev.yml logs -f lsm_backend_dev
+docker compose -f docker-compose.dev.yml logs -f lsm_frontend
+docker compose -f docker-compose.dev.yml logs -f lsm_mysql_dev
+```
+
+### Stop / Remove
+
+```bash
+# Stop
+docker compose -f docker-compose.dev.yml down
+
+# Stop and remove named volumes (⚠️ wipes MySQL data)
+docker compose -f docker-compose.dev.yml down -v
+```
+
+---
+
+## Troubleshooting
+
+### “Access denied for user … (1045)”
+
+MySQL only reads `MYSQL_*` env vars the **first time** the data directory is initialized. If you changed DB names/users/passwords after the first run, remove the MySQL data volume so it re-initializes with the new values:
+
+```bash
+docker compose -f docker-compose.dev.yml stop lsm_backend_dev lsm_mysql_dev
+docker volume rm library-management_lsm_mysql_data_dev
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+### “Please provide a valid cache path”
+
+Ensure the Laravel `storage/` and `bootstrap/cache` directories exist. The backend entrypoint prepares them automatically, but if you removed volumes or changed mounts, you can re-run the stack. Also verify your `CACHE_DRIVER=file` in dev.
+
+### SQLite errors when expecting MySQL
+
+Confirm your `backend/.env` has `DB_CONNECTION=mysql` and the correct `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` matching `docker-compose.dev.yml`. Recreate containers if necessary.
+
+### HMR doesn’t connect
+
+Ensure Vite is running with `--host --port 5173` and the port `5173:5173` is published. Open `http://localhost:5173` and check browser console for HMR messages.
+
+### Backend marked “unhealthy” for a while at startup
+
+The healthcheck may run before `artisan serve` is ready. Either increase `start_period`/`retries` or change the frontend dependency to `service_started` to avoid a transient failure.
+
+---
+
+## Project READMEs
+
+- **Backend README** → [`backend/README.md`](backend/README.md)
+- **Frontend README** → [`frontend/README.md`](frontend/README.md)
+
+If you move folders, update these links accordingly.
+
+---
+
+## Ports Recap
+
+| Service   | Host URL / Port        | Container Port |
+|-----------|-------------------------|----------------|
+| MySQL     | `localhost:3307`       | `3306`         |
+| Backend   | `http://localhost:9080`| `8000`         |
+| Frontend  | `http://localhost:5173`| `5173`         |
+
+---
+
+## Notes
+
+- This setup is for **development only** (HMR, verbose logs, no opcache tuning for prod). A separate production stack should use Nginx + PHP-FPM, built assets, and cache optimizations.
+- If you test from another device on your LAN (e.g., mobile), replace `localhost` with your host machine IP (e.g., `http://192.168.x.x:9080`). Update any frontend `VITE_API_URL` accordingly.

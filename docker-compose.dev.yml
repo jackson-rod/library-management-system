@@ -1,0 +1,77 @@
+networks:
+  devnet:
+    name: lsm_devnet
+
+volumes:
+  lsm_mysql_data_dev:
+
+services:
+  lsm_mysql_dev:
+    image: mysql:8.0
+    container_name: lsm_mysql_dev
+    networks: [devnet]
+    environment:
+      MYSQL_DATABASE: lms_database
+      MYSQL_USER: lms_username
+      MYSQL_PASSWORD: lms_secret_password
+      MYSQL_ROOT_PASSWORD: lms_root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - lsm_mysql_data_dev:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  lsm_backend_dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: lsm_backend_dev
+    networks: [devnet]
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:9080
+      DB_CONNECTION: mysql
+      DB_HOST: lsm_mysql_dev
+      DB_PORT: 3306
+      DB_DATABASE: lms_database
+      DB_USERNAME: lms_username
+      DB_PASSWORD: lms_secret_password
+      CACHE_DRIVER: file
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: database
+      LOG_CHANNEL: stack
+    ports:
+      - "9080:8000"
+    depends_on:
+      lsm_mysql_dev:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:8000/api/books || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 180s
+
+  lsm_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: lsm_frontend
+    networks: [devnet]
+    environment:
+      VITE_API_URL: http://localhost:9080/api
+    command: sh -lc "npm ci || npm install && npm run dev -- --host --port 5173"
+    ports:
+      - "5173:5173"
+    depends_on:
+      lsm_backend_dev:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/usr/src/app
