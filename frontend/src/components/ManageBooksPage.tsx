@@ -14,9 +14,11 @@ import { extractErrorMessage } from '@/utils/error';
 type BookFormData = {
   title: string;
   author: string;
-  isbn: string;
+  isbn?: string;
   publication_year: number;
 };
+
+const generateIsbn = () => `978${Math.floor(Math.random() * 1_000_000_0000).toString().padStart(10, '0')}`;
 
 export default function ManageBooksPage() {
   const { user } = useAuth();
@@ -33,15 +35,19 @@ export default function ManageBooksPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<BookFormData>({
     defaultValues: {
       title: '',
       author: '',
-      isbn: '',
+      isbn: generateIsbn(),
       publication_year: new Date().getFullYear(),
     },
   });
+
+  const currentIsbn = watch('isbn');
 
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
@@ -78,13 +84,14 @@ export default function ManageBooksPage() {
         await bookService.update(editingBook.id, rest);
         showToast('Book updated successfully', 'success');
       } else {
-        await bookService.create({ ...data, available: true });
+        const isbn = data.isbn ?? generateIsbn();
+        await bookService.create({ ...data, isbn, available: true });
         showToast('Book created successfully', 'success');
       }
       reset({
         title: '',
         author: '',
-        isbn: '',
+        isbn: generateIsbn(),
         publication_year: new Date().getFullYear(),
       });
       setEditingBook(null);
@@ -120,7 +127,7 @@ export default function ManageBooksPage() {
     reset({
       title: '',
       author: '',
-      isbn: '',
+      isbn: generateIsbn(),
       publication_year: new Date().getFullYear(),
     });
   };
@@ -320,14 +327,23 @@ export default function ManageBooksPage() {
               />
 
               {!editingBook && (
-                <FormInput
-                  id="isbn"
-                  label="ISBN"
-                  type="text"
-                  disabled={isSubmitting}
-                  error={errors.isbn}
-                  {...register('isbn', { required: 'ISBN is required' })}
-                />
+                <div className="space-y-2">
+                  <FormInput
+                    id="isbn"
+                    label="ISBN"
+                    type="text"
+                    disabled={isSubmitting}
+                    error={errors.isbn}
+                    {...register('isbn', { required: 'ISBN is required' })}
+                  />
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-indigo-300 hover:text-indigo-200"
+                    onClick={() => setValue('isbn', generateIsbn())}
+                  >
+                    Generate ISBN
+                  </button>
+                </div>
               )}
 
               <FormInput

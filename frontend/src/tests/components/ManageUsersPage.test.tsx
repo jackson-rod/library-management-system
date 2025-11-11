@@ -113,18 +113,21 @@ describe('ManageUsersPage', () => {
     await user.clear(screen.getByTestId('form-input-email'));
     await user.type(screen.getByTestId('form-input-email'), 'new@example.com');
 
+    const libraryField = screen.getByLabelText('Library ID') as HTMLInputElement;
+    const generatedId = libraryField.value;
+
     await user.selectOptions(screen.getByLabelText('Role'), 'User');
     await user.type(screen.getByTestId('form-input-password'), 'secret123');
 
     await user.click(screen.getByRole('button', { name: /create user/i }));
 
     await waitFor(() => {
-      expect(mockCreate).toHaveBeenCalledWith({
-        name: 'New User',
-        email: 'new@example.com',
-        password: 'secret123',
-        role: 'User',
-      });
+      const [[payload]] = mockCreate.mock.calls;
+      expect(payload.name).toBe('New User');
+      expect(payload.email).toBe('new@example.com');
+      expect(payload.password).toBe('secret123');
+      expect(payload.role).toBe('User');
+      expect(payload.library_id).toBe(generatedId);
     });
   });
 
@@ -135,6 +138,7 @@ describe('ManageUsersPage', () => {
       name: 'Ava Analyst',
       email: 'ava@example.com',
       role: 'Admin',
+      library_id: 'LIB-1001',
     });
 
     render(<ManageUsersPage />);
@@ -142,6 +146,9 @@ describe('ManageUsersPage', () => {
 
     const user = userEvent.setup();
     await user.click(screen.getAllByText(/Edit/)[0]);
+
+    expect(screen.getAllByText('Library ID')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('LIB-1001')[0]).toBeInTheDocument();
 
     await user.clear(screen.getByTestId('form-input-name'));
     await user.type(screen.getByTestId('form-input-name'), 'Ava Ops');

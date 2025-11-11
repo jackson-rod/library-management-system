@@ -19,7 +19,7 @@ export const userService = {
     return normalizePaginator<User>(response.data);
   },
 
-  async create(payload: { name: string; email: string; password: string; role: 'Admin' | 'User' }): Promise<User> {
+  async create(payload: { name: string; email: string; password: string; role: 'Admin' | 'User'; library_id?: string }): Promise<User> {
     const response = await api.post<{ user: User }>('/users', payload);
     return response.data.user;
   },
