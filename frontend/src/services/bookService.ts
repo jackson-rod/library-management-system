@@ -1,5 +1,6 @@
 import { api } from '@/config/axios';
 import type { Book, PaginatedResponse } from '@/types/library';
+import { normalizePaginator, type LaravelPaginator } from '@/utils/pagination';
 
 interface BookListParams {
   search?: string;
@@ -10,11 +11,11 @@ type BookListResponse = PaginatedResponse<Book>;
 
 export const bookService = {
   async list(params: BookListParams = {}): Promise<BookListResponse> {
-    const response = await api.get<BookListResponse>('/books', {
+    const response = await api.get<BookListResponse | LaravelPaginator<Book>>('/books', {
       params,
     });
 
-    return response.data;
+    return normalizePaginator<Book>(response.data);
   },
 
   async getById(id: number): Promise<Book> {
