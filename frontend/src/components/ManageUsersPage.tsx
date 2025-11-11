@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import NavigationBar from './NavigationBar';
+import NavigationBar from '@/components/NavigationBar';
 import Loading from './Loading';
 import FormInput from './FormInput';
 import FormError from './FormError';

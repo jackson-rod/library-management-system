@@ -76,6 +76,7 @@ describe('NavigationBar', () => {
 
     expect(screen.getByTestId('nav-link-books')).toBeInTheDocument();
     expect(screen.getByTestId('nav-link-my-borrowings')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-link-resources')).toBeInTheDocument();
   });
 
   it('should display admin-only links for admin user', async () => {
@@ -88,6 +89,7 @@ describe('NavigationBar', () => {
 
     expect(screen.getByTestId('nav-link-manage-books')).toBeInTheDocument();
     expect(screen.getByTestId('nav-link-manage-users')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-link-resources')).toBeInTheDocument();
   });
 
   it('should not show admin links for regular user', async () => {
@@ -209,6 +211,7 @@ describe('NavigationBar', () => {
       expect(screen.getByTestId('mobile-nav-link-dashboard')).toBeInTheDocument();
       expect(screen.getByTestId('mobile-nav-link-books')).toBeInTheDocument();
       expect(screen.getByTestId('mobile-nav-link-my-borrowings')).toBeInTheDocument();
+      expect(screen.getByTestId('mobile-nav-link-resources')).toBeInTheDocument();
     });
   });
 
