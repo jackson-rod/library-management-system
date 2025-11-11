@@ -22,4 +22,18 @@ export const bookService = {
     const response = await api.get<Book>(`/books/${id}`);
     return response.data;
   },
+
+  async create(payload: Omit<Book, 'id'>): Promise<Book> {
+    const response = await api.post<{ book: Book; message: string }>('/books', payload);
+    return response.data.book;
+  },
+
+  async update(id: number, payload: Partial<Omit<Book, 'id'>>): Promise<Book> {
+    const response = await api.put<{ book: Book; message: string }>(`/books/${id}`, payload);
+    return response.data.book;
+  },
+
+  async remove(id: number): Promise<void> {
+    await api.delete(`/books/${id}`);
+  },
 };
