@@ -10,6 +10,7 @@ import BorrowingsPage from '@/components/BorrowingsPage'
 import BookDetails from '@/components/BookDetails'
 import ResourcesPage from '@/components/ResourcesPage'
 import ManageUsersPage from '@/components/ManageUsersPage'
+import ManageBooksPage from '@/components/ManageBooksPage'
 
 function App() {
   return (
@@ -81,6 +82,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ManageUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/books"
+            element={
+              <ProtectedRoute>
+                <ManageBooksPage />
               </ProtectedRoute>
             }
           />
