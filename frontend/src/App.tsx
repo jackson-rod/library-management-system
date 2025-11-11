@@ -8,6 +8,9 @@ import PublicRoute from '@/components/PublicRoute'
 import BooksPage from '@/components/BooksPage'
 import BorrowingsPage from '@/components/BorrowingsPage'
 import BookDetails from '@/components/BookDetails'
+import ResourcesPage from '@/components/ResourcesPage'
+import ManageUsersPage from '@/components/ManageUsersPage'
+import ManageBooksPage from '@/components/ManageBooksPage'
 
 function App() {
   return (
@@ -63,6 +66,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <BorrowingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              <ProtectedRoute>
+                <ResourcesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <ManageUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/books"
+            element={
+              <ProtectedRoute>
+                <ManageBooksPage />
               </ProtectedRoute>
             }
           />

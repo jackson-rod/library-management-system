@@ -33,8 +33,9 @@ export default function NavigationBar() {
       isActive: (pathname: string) => pathname === '/books' || pathname.startsWith('/books/'),
     },
     { name: 'My Borrowings', href: '/borrowings' },
-    { name: 'Manage Books', href: '/admin/books', adminOnly: true, isDisabled: true },
-    { name: 'Manage Users', href: '/admin/users', adminOnly: true, isDisabled: true },
+    { name: 'Resources', href: '/resources' },
+    { name: 'Manage Books', href: '/admin/books', adminOnly: true },
+    { name: 'Manage Users', href: '/admin/users', adminOnly: true },
   ].filter((item) => !item.adminOnly || isAdmin);
 
   const handleLogout = async () => {

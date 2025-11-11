@@ -198,7 +198,88 @@ Keep these behaviors in mind when updating controllers, jobs, or UI flows so the
 
 ---
 
+## Postman Collection
+
+- Import `backend/Test LMS.postman_collection.json` to replay the Auth, Books, and Borrowing flows.
+- The collection assumes:
+  - Base URL variable `{{baseUrl}}` (set to `http://localhost:9080`).
+  - Environment-level `{{token}}` for the Sanctum bearer token (obtain via `/api/login`).
+- Requests cover:
+  - `POST /api/login` and `/api/register`
+  - `GET/POST/PUT/DELETE /api/books`
+  - `POST /api/borrowings`, `GET /api/me/borrowings`, `POST /api/borrowings/{id}/return`
+- Update the variables to point to your host if you’re running on a different port or via Docker.
+
+---
+
 ## Notes
 
 - This setup is for **development only** (HMR, verbose logs, no opcache tuning for prod). A separate production stack should use Nginx + PHP-FPM, built assets, and cache optimizations.
 - If you test from another device on your LAN (e.g., mobile), replace `localhost` with your host machine IP (e.g., `http://192.168.x.x:9080`). Update any frontend `VITE_API_URL` accordingly.
+
+---
+
+## Architecture Overview
+
+| Concern         | Stack / Decisions                                                                                                                        |
+|-----------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| Backend         | Laravel 11, Eloquent ORM, Sanctum for API tokens, Form Requests for validation, API Resources for responses                               |
+| Frontend        | React 19 + Vite, React Router, Context + custom hooks for auth/toast, React Hook Form, Tailwind CSS                                       |
+| State Management| Server-side auth via Sanctum tokens + Axios interceptors; React Context for session + toast state                                         |
+| Styling         | Tailwind utility classes with fintech-inspired gradients, cards, and typography                                                           |
+| Testing         | PHPUnit feature tests (Auth, Books, Borrowing, Users) + Vitest for core components/hooks (SignIn, Navigation, Toasts, Protected routes)   |
+| Documentation   | L5 Swagger (`/api/documentation`) for REST surface                                                                                       |
+
+Key folders:
+- `backend/app/Http/Controllers` – REST controllers (Auth, Books, Borrowing, Users)
+- `backend/app/Http/Requests` – request validation
+- `backend/app/Http/Resources` – API resource transformers
+- `frontend/src/components` – SPA screens (Dashboard, Books, Borrowings, Auth)
+- `frontend/src/context` – Auth + Toast providers
+- `frontend/src/services` – Axios wrappers for auth/books/borrowing
+
+---
+
+## Frontend Navigation Flow
+
+| Route             | Description                                                                                               |
+|-------------------|-----------------------------------------------------------------------------------------------------------|
+| `/signin`         | React Hook Form + Tailwind form for admins/users to authenticate                                          |
+| `/register`       | Self-serve onboarding (defaults to User role)                                                             |
+| `/dashboard`      | Welcome metrics, active borrow table, due-soon cards                                                      |
+| `/books`          | Searchable/sortable catalog with inline borrow CTA                                                        |
+| `/books/:id`      | Detail view with availability + borrow action                                                             |
+| `/borrowings`     | User’s active/history list with return flow and filters                                                   |
+
+Access control: `PublicRoute` guards `/signin` and `/register`, while `ProtectedRoute` (with loading spinner) ensures a valid token before loading the secured routes.
+
+---
+
+## Fintech-Inspired Design Notes
+
+- **Execution & accountability:** Dashboard metrics, borrow limits, overdue badges, and “due soon” reminders mirror KPI-driven fintech workspaces.
+- **Productivity cues:** Navbar notification bell (placeholder for future realtime alerts) and toast system for instant feedback.
+- **Visual language:** Dark surfaces with gradient accents, cards, and outlined elements for a modern trading-floor aesthetic.
+- **Clarity first:** Tables use sorting, badges, and typography hierarchy to surface the most actionable data.
+
+---
+
+## Progress Log / Timeline
+
+| Date (2025) | Milestone                                                                                 |
+|-------------|-------------------------------------------------------------------------------------------|
+| Nov 8      | Docker dev stack + Laravel/React scaffolding; Sanctum auth baseline                       |
+| Nov 8      | Book CRUD, search API + frontend SignIn/Register flows                                    |
+| Nov 9      | Borrowing domain (migrations, controller, tests) + SPA dashboard/books/borrowings screens |
+| Nov 9      | Toast provider, navigation polish, React/Vitest coverage                                  |
+| Nov 9      | Swagger setup, README docs, final QA                                                      |
+
+---
+
+## Submission & Contact
+
+- **Repository:** (this repo) – ensure `develop` merges into `main` before submission.
+- **Deliverables:** Source code + instructions + Swagger docs + progress log.
+- **Submission deadline:** Nov 10, 2025.
+- **Send to:** jackson.rodriguezf@gmail.com (GitHub link + any demo info).  
+- **Questions:** reach out via email or GitHub issues.
