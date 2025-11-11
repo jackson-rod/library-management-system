@@ -17,7 +17,10 @@ type UserFormData = {
   email: string;
   role: 'Admin' | 'User';
   password?: string;
+  library_id?: string;
 };
+
+const generateLibraryId = () => `LIB-${Math.floor(Math.random() * 9000 + 1000)}`;
 
 export default function ManageUsersPage() {
   const { user } = useAuth();
@@ -34,6 +37,7 @@ export default function ManageUsersPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<UserFormData>({
     defaultValues: {
@@ -41,6 +45,7 @@ export default function ManageUsersPage() {
       email: '',
       role: 'User',
       password: '',
+      library_id: generateLibraryId(),
     },
   });
 
@@ -88,10 +93,11 @@ export default function ManageUsersPage() {
           email: data.email,
           password: data.password ?? '',
           role: data.role,
+          library_id: data.library_id ?? generateLibraryId(),
         });
         showToast('User created successfully', 'success');
       }
-      reset({ name: '', email: '', role: 'User', password: '' });
+      reset({ name: '', email: '', role: 'User', password: '', library_id: generateLibraryId() });
       setEditingUser(null);
       fetchUsers(page, search);
     } catch (err) {
@@ -106,6 +112,7 @@ export default function ManageUsersPage() {
       email: selected.email,
       role: selected.role,
       password: '',
+      library_id: selected.library_id,
     });
   };
 
@@ -122,7 +129,7 @@ export default function ManageUsersPage() {
 
   const handleCancelEdit = () => {
     setEditingUser(null);
-    reset({ name: '', email: '', role: 'User', password: '' });
+    reset({ name: '', email: '', role: 'User', password: '', library_id: generateLibraryId() });
   };
 
   const userSummary = useMemo(() => {
@@ -324,6 +331,35 @@ export default function ManageUsersPage() {
                 error={errors.email}
                 {...register('email', { required: 'Email is required' })}
               />
+
+              {!editingUser && (
+                <div>
+                  <FormInput
+                    id="library_id"
+                    label="Library ID"
+                    type="text"
+                    disabled={isSubmitting}
+                    error={errors.library_id}
+                    {...register('library_id', { required: 'Library ID is required' })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setValue('library_id', generateLibraryId())}
+                    className="mt-2 text-xs font-semibold text-indigo-300 hover:text-indigo-200"
+                  >
+                    Generate Library ID
+                  </button>
+                </div>
+              )}
+
+              {editingUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-100">Library ID</label>
+                  <p className="mt-2 rounded-md bg-white/5 px-3 py-2 text-sm text-gray-300">
+                    {editingUser.library_id ?? '—'}
+                  </p>
+                </div>
+              )}
 
               <div data-testid="form-input-wrapper-role">
                 <label
