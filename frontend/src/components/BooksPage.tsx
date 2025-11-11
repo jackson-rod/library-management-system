@@ -207,7 +207,7 @@ export default function BooksPage() {
               <div className="flex rounded-md border border-white/10">
                 <button
                   type="button"
-                  className="px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/30"
+                  className="px-3 py-2 text-xs font-medium text-white/70 cursor-pointer hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/30"
                   onClick={() => handlePageChange('prev')}
                   disabled={page === 1 || loading}
                 >
@@ -215,7 +215,7 @@ export default function BooksPage() {
                 </button>
                 <button
                   type="button"
-                  className="border-l border-white/5 px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/30"
+                  className="border-l border-white/5 px-3 py-2 text-xs cursor-pointer font-medium text-white/70 hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/30"
                   onClick={() => handlePageChange('next')}
                   disabled={meta ? page >= meta.last_page || loading : true}
                 >
@@ -327,7 +327,7 @@ export default function BooksPage() {
                             type="button"
                             onClick={() => handleBorrow(book.id)}
                             disabled={disableBorrow}
-                            className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
+                            className="rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
                           >
                             {borrowInFlight === book.id ? 'Processing…' : 'Borrow'}
                           </button>
